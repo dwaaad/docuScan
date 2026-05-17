@@ -1,6 +1,6 @@
 <picture>
   <source srcset="images/docuScan_docuScan Dark copy.svg" media="(prefers-color-scheme: dark)">
-  <img src="images/docuScan_docuScan Light.svg" alt="Project Logo">
+  <img src="images/docuScan_docuScan Light.svg" alt="Project Logo" width="300">
 </picture>   
 <picture> <source media="(prefers-color-scheme: dark)" srcset="images/docuScan_docuScan Light.svg"> <img srcset="images/docuScan_docuScan Dark copy.svg" width="300"> </picture>
 
