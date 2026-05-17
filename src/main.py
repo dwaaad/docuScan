@@ -1,5 +1,4 @@
 from PIL import Image
-import os
 
 white_point = 0.5 * 255 # 0 (black) to 255 (white)
 black_point = 0.99 * 255 # 99%
@@ -7,9 +6,6 @@ black_point = 0.99 * 255 # 99%
 # open img
 filename = 'image.png'
 filepath = f"original_images/{filename}"
-
-if not os.path.exists(filepath):
-    os.makedirs("original_images/")
 
 # processing
 og_img = Image.open(filepath).convert('L') # L = Luminance | A = alpha
@@ -25,10 +21,8 @@ print(f"Mode: {mode}")
 
 og_pixel_map = og_img.load()# Load all pixels from the image.
 
-# Create a new image matching the original image's color mode, and size.
-#   Load all the pixels from this new image as well.
-new_image = Image.new(mode, (width, height))
-new_pixel_map = new_image.load()
+new_image = Image.new(mode, (width, height))# Create a new image matching the original image's color mode, and size.
+new_pixel_map = new_image.load() # Load all the pixels from this new image as well.
 
 for x in range(width):
     for y in range(height):
