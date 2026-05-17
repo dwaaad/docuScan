@@ -1,7 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/docuScan_docuScanDark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="images/docuScan_docuScanLight.svg">
-  <img alt="docuScan logo" src="images/docuScan_docuScanLight.svg" width="300">
+  <source media="(prefers-color-scheme: dark)" srcset="images/docuScan_docuScan Dark copy.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/docuScan_docuScan Light.svg">
 </picture>
 
 # docuScan
