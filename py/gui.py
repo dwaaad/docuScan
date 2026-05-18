@@ -39,7 +39,7 @@ def scanImage():
     new_image.save(new_filepath)
 
 def openFile():
-    global filepath, width, height
+    global filepath, width, height, filename
     
     all_exts = Image.registered_extensions()# Get all registered Pillow extensions
     supported_exts = [ext.lower() for ext, fmt in all_exts.items() if fmt in Image.SAVE]
@@ -57,6 +57,7 @@ def openFile():
     og_img = Image.open(filepath)
 
     # Grab and store img info
+    filename = og_img.filename
     width,height=og_img.size
     mode=og_img.mode
 
@@ -99,11 +100,11 @@ menu.add_cascade(label="File", menu=file) # add file sub-menu to menu bar
 # About
 
 #options
-main = ttk.Frame(root, padding=10) # create frame
+main = ttk.LabelFrame(root, text="Options", padding=10) # create frame
 main.grid(column=0, row=0)
 
 #image preview
-preview = ttk.Frame(root, padding=10) # create frame
+preview = ttk.LabelFrame(root, text="Preview", padding=10) # create frame
 preview.grid(column=1, row=0)
 
 # METADATA SETUP
