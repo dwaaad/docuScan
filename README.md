@@ -4,3 +4,11 @@
 </picture>
 <hr>
 <p></p>In retaliation to the discontinuation of Microsoft Office Lens, I have created this simple tool to convert images into a scanned document appearance.</p>
+
+### To Do
+- [ ] GUI
+- [ ] Preview image before processing
+- [ ] Enable/disable white_point (triggering a slider)
+- [ ] Enable/disable black_point (triggering a slider)
+- [ ] Web version using React
+- [ ] Mobile version using React Native
