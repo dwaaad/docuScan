@@ -9,6 +9,7 @@ from PIL import ImageTk,Image # image processing
 import webbrowser # for opening links
 import os # for extracting just the file name of the image
 import requests # for checking updates through GitHub API
+import re # regex for extracting version number from APP_VERSION and GitHub tag
 
 global APP_VERSION
 APP_VERSION = "v0.2.1-alpha"
@@ -19,7 +20,7 @@ black_point = 0.99 * 255 # 99%
 def scanImage():
     global new_image # for the saveFile() function
     # Open image and convert it to greyscale
-    og_img = Image.open(filepath).convert('LA') # L = luminance | A = alpha
+    og_img = Image.open(filepath).convert('L') # L = luminance | A = alpha
     mode=og_img.mode # get the mode again because we've now switched to Luminance
     
     og_pixel_map = og_img.load()# Load all pixels from the image.
@@ -31,14 +32,12 @@ def scanImage():
         for y in range(height):
             # Copy the original pixel to the new pixel map.
             og_pixel = og_pixel_map[x, y]
-            og_l = og_pixel[0] # luminance
-            og_a = og_pixel[1] # alpha
             
-            if og_pixel[0] < white_point:
-                new_pixel = (0, og_a)
+            if og_pixel < white_point:
+                new_pixel = 0
                 new_pixel_map[x, y] = new_pixel
-            if og_pixel[0] > white_point and og_pixel[0] < black_point:
-                new_pixel = (255, og_a)
+            if og_pixel > white_point and og_pixel < black_point:
+                new_pixel = 255
                 new_pixel_map[x, y] = new_pixel
 
     # both of these should be in the preview frame
@@ -119,10 +118,16 @@ def saveFile():
     display_save = ttk.Label(details,text=f"\nSucessfully saved new image to: {exe_dir}/{new_filepath}").grid(column=0, row=4)
     # give some kind of option to open the image either by double clicking as a link or using button or what
 
+def extractVersion(tag):
+    match = re.search(r"\d+\.\d+\.\d+", tag)
+    return match.group(0) if match else None
+
 def updateCheck():
     url = "https://api.github.com/repos/dwaaad/docuScan/releases/latest"
     data = requests.get(url).json()
-    if data["tag_name"] != APP_VERSION:
+    tag_name = data["tag_name"]
+    tag_name = extractVersion(tag_name)
+    if tag_name > APP_VERSION:
         update_response = messagebox.askyesno("New version available!", "A newer version is available, would you like to update?")
         if update_response == True:
             webbrowser.open("https://github.com/dwaaad/docuScan/releases/latest")
@@ -134,8 +139,8 @@ startup_update = BooleanVar(value=True)#auto update on start set to True by defa
 # METADATA SETUP
 root.resizable(False, False)
 root.title("docuScan") # set title
-small_icon = PhotoImage(file="../images/docuScan_favicon_x16.png")
-large_icon = PhotoImage(file="../images/docuScan_favicon_x32.png")
+small_icon = PhotoImage(file="icons/docuScan_favicon_x16.png")
+large_icon = PhotoImage(file="icons/docuScan_favicon_x32.png")
 root.iconphoto(False, large_icon, small_icon)
 
 #navbar menu
