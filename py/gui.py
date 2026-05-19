@@ -10,21 +10,8 @@ import webbrowser # for opening links
 import os # for extracting just the file name of the image
 import requests # for checking updates through GitHub API
 
-def updateCheck():
-    url = "https://api.github.com/repos/dwaaad/docuScan/releases/latest"
-    data = requests.get(url).json()
-    if data["tag_name"] != APP_VERSION:
-        update_response = messagebox.askokcancel("New version available!", "A newer version is available, would you like to update?")
-        if update_response == 1:
-            webbrowser.open("https://api.github.com/repos/dwaaad/docuScan/releases/latest")
-
-#auto update on start
-startup_update = True
-if startup_update:
-    updateCheck()
-
-global theme
-theme = darkdetect.theme()#replace darkdetect.theme() with accessing a save.txt in which the default value is set to darkdetect.theme()
+global APP_VERSION
+APP_VERSION = "v0.2.1-alpha"
 
 white_point = 0.5 * 255 # 0 (black) to 255 (white)
 black_point = 0.99 * 255 # 99%
@@ -132,7 +119,17 @@ def saveFile():
     display_save = ttk.Label(details,text=f"\nSucessfully saved new image to: {exe_dir}/{new_filepath}").grid(column=0, row=4)
     # give some kind of option to open the image either by double clicking as a link or using button or what
 
+def updateCheck():
+    url = "https://api.github.com/repos/dwaaad/docuScan/releases/latest"
+    data = requests.get(url).json()
+    if data["tag_name"] != APP_VERSION:
+        update_response = messagebox.askyesno("New version available!", "A newer version is available, would you like to update?")
+        if update_response == True:
+            webbrowser.open("https://github.com/dwaaad/docuScan/releases/latest")
+
 root = Tk() # create window
+
+startup_update = BooleanVar(value=True)#auto update on start set to True by default
 
 # METADATA SETUP
 root.resizable(False, False)
@@ -140,8 +137,6 @@ root.title("docuScan") # set title
 small_icon = PhotoImage(file="../images/docuScan_favicon_x16.png")
 large_icon = PhotoImage(file="../images/docuScan_favicon_x32.png")
 root.iconphoto(False, large_icon, small_icon)
-global APP_VERSION
-APP_VERSION = "v0.2.0-alpha"
 
 #navbar menu
 menu = Menu(root)
@@ -167,7 +162,7 @@ view = Menu(menu, tearoff=0)
 menu.add_cascade(label="View", menu=view)
 
 theme = Menu(view, tearoff=0)
-theme.add_command(label="Auto")
+theme.add_command(label="Auto", command=themeAuto)
 theme.add_command(label="Dark Mode", command=themeDark)
 theme.add_command(label="Light Mode", command=themeLight)
 
@@ -240,7 +235,7 @@ save.grid(column=1,row=0, padx=(5,0))
 
 # THEMING
 
-sv_ttk.set_theme(theme) # set theme depending on user choice
+sv_ttk.set_theme(darkdetect.theme())#replace darkdetect.theme() with accessing a save.txt in which the default value is set to darkdetect.theme()
 
 def apply_theme_to_titlebar(root): # windows only
     import platform
@@ -262,4 +257,9 @@ def apply_theme_to_titlebar(root): # windows only
 apply_theme_to_titlebar(root)
 
 root.config(menu=menu)#display menu
+
+# check for updates once the whole gui has loaded
+if startup_update.get(): 
+    updateCheck()
+
 root.mainloop()
