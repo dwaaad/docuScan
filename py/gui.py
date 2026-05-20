@@ -12,7 +12,7 @@ import requests # for checking updates through GitHub API
 import re # regex for extracting version number from APP_VERSION and GitHub tag
 
 global APP_VERSION
-APP_VERSION = "v0.2.2-alpha"
+APP_VERSION = "v0.2.2-beta"
 
 white_point = 0.5 * 255 # 0 (black) to 255 (white)
 black_point = 0.99 * 255 # 99%
