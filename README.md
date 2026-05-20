@@ -12,6 +12,6 @@
 - [ ] React Native Mobile Version
 
 # Licence
-This project is licensed under the MIT License.
+This project is licensed under a modified version of the MIT License.
 However, the file `menubar.py` contains code derived from a StackOverflow answer
 licensed under CC BY-SA 4.0 and is therefore distributed under CC BY-SA 4.0.
