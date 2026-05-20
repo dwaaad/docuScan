@@ -12,7 +12,7 @@ import requests # for checking updates through GitHub API
 import re # regex for extracting version number from APP_VERSION and GitHub tag
 
 global APP_VERSION
-APP_VERSION = "v0.2.1-alpha"
+APP_VERSION = "v0.2.2-alpha"
 
 white_point = 0.5 * 255 # 0 (black) to 255 (white)
 black_point = 0.99 * 255 # 99%
@@ -59,6 +59,9 @@ def openFile():
         filetypes=(("Image files", img_filter), ("All files", "*.*"))
     )
 
+    if not filepath:
+        return  # user cancelled, exit the function safely
+
     try:# Open image and display info
         og_img = Image.open(filepath)
 
@@ -94,16 +97,19 @@ def themeDark():
     theme = "dark"#save this preference to a .txt
     sv_ttk.set_theme(theme)
     apply_theme_to_titlebar(root)
+    menubar.reload()
 
 def themeLight():
     theme = "light"#save this preference to a .txt
     sv_ttk.set_theme(theme)
     apply_theme_to_titlebar(root)
+    menubar.reload()
 
 def themeAuto():
     theme = darkdetect.theme()#save this preference to a .txt
     sv_ttk.set_theme(theme)
     apply_theme_to_titlebar(root)
+    menubar.reload()
 
 def clearFrame(frame):
     for widget in frame.winfo_children():
@@ -123,18 +129,179 @@ def extractVersion(tag):
     return match.group(0) if match else None
 
 def updateCheck():
-    url = "https://api.github.com/repos/dwaaad/docuScan/releases/latest"
-    data = requests.get(url).json()
-    tag_name = data["tag_name"]
-    tag_name = extractVersion(tag_name)
-    if tag_name > APP_VERSION:
-        update_response = messagebox.askyesno("New version available!", "A newer version is available, would you like to update?")
+    # get latest version by loading the latest repo link
+    url = "https://github.com/dwaaad/docuScan/releases/latest"
+
+    # request without redirecting
+    request = requests.get(url, allow_redirects=False)
+
+    # extract version number tag from URL redirect
+    latest_tag = request.headers["Location"].split("/")[-1]# GitHub should return a redirect with a Location header
+    latest_version = extractVersion(latest_tag)
+    current_version = extractVersion(APP_VERSION)
+
+    # compare version numbers
+    if latest_version > current_version:
+        update_response = messagebox.askyesno("New version available!", f"A newer version ({latest_tag}) is available. Update now?\n\nDisable this message by going to Help > Check for Updates... > Check on Start")
         if update_response == True:
             webbrowser.open("https://github.com/dwaaad/docuScan/releases/latest")
 
+class MenuBar(Frame): # a lot of this class was written with Copilot
+    # Source: https://stackoverflow.com/a/74974555
+    # Author: user4136999
+    # Retrieved: 2026-05-20
+    # License: CC BY-SA 4.0
+    #
+    # This class contains derivative work based on the above source.
+    # It is therefore licensed under CC BY-SA 4.0.
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.master=master
+
+        # get theme
+        self.theme = sv_ttk.get_theme()
+
+        # Theme colours
+        self.dark = {
+            "bg": "#1c1c1c",
+            "fg": "white",
+            "activebackground": "#2a2a2a",
+            "activeforeground": "white"
+        }
+
+        self.light = {
+            "bg": "white",
+            "fg": "black",
+            "activebackground": "#e5f3ff",
+            "activeforeground": "black"
+        }
+
+        # Pick theme
+        if self.theme == "dark": self.colours = self.dark
+        if self.theme == "light": self.colours = self.light
+
+        # Update background
+        self.configure(bg=self.colours["bg"])
+
+        border = Frame(self, height=1, bg=self.colours["activebackground"])
+        border.pack(side="bottom", fill="x")
+
+        # container for buttons
+        self.button_area = Frame(self, bg=self.colours["bg"])
+        self.button_area.pack(side="top", fill="x")
+
+        # bottom border
+        self.border = Frame(self, height=1, bg=self.colours["activebackground"])
+        self.border.pack(side="bottom", fill="x")
+
+        # Build menus using helper functions
+        self.build_menus()
+
+    def make_button(self, parent, text):
+        btn = Menubutton(
+            parent,
+            text=text,
+            bg=self.colours["bg"],
+            fg=self.colours["fg"],
+            activebackground=self.colours["activebackground"],
+            activeforeground=self.colours["activeforeground"],
+            padx=10
+        )
+        return btn
+
+    def make_menu(self, parent):
+        return Menu(
+            parent,
+            tearoff=0,
+            bg=self.colours["bg"],
+            fg=self.colours["fg"],
+            activebackground=self.colours["activebackground"],
+            activeforeground=self.colours["activeforeground"]
+        )
+
+    def build_menus(self):
+
+        # FILE
+        file_btn = self.make_button(self, "File")
+        file_menu = self.make_menu(file_btn)
+
+        file_menu.add_command(label="Open", command=openFile)
+        file_menu.add_command(label="Recent Files")
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=root.destroy)
+
+        file_btn.config(menu=file_menu)
+        file_btn.pack(in_=self.button_area,side="left")
+
+        # VIEW
+        view_btn = self.make_button(self, "View")
+        view_menu = self.make_menu(view_btn)
+
+        # Appearance submenu
+        theme_menu = self.make_menu(view_menu)
+        theme_menu.add_command(label="Auto", command=themeAuto)
+        theme_menu.add_command(label="Dark Mode", command=themeDark)
+        theme_menu.add_command(label="Light Mode", command=themeLight)
+
+        view_menu.add_cascade(label="Appearance", menu=theme_menu)
+        view_menu.add_separator()
+        view_menu.add_command(label="Show Details")
+
+        view_btn.config(menu=view_menu)
+        view_btn.pack(in_=self.button_area,side="left")
+
+        # HELP
+        help_btn = self.make_button(self, "Help")
+        help_menu = self.make_menu(help_btn)
+
+        help_menu.add_command(label="Web Version", command=openWebsite)
+        help_menu.add_command(label="GitHub Repository", command=openRepo)
+        help_menu.add_separator()
+
+        # Updates submenu
+        updates_menu = self.make_menu(help_menu)
+        updates_menu.add_command(label="Check Now", command=updateCheck)
+        updates_menu.add_checkbutton(label="Check on Start", variable=startup_update)
+
+        help_menu.add_cascade(label="Check for Updates...", menu=updates_menu)
+        help_menu.add_separator()
+        help_menu.add_command(label="About")
+
+        help_btn.config(menu=help_menu)
+        help_btn.pack(in_=self.button_area,side="left")
+
+    def reload(self):
+        # Get theme again
+        self.theme = sv_ttk.get_theme()
+
+        # Pick theme
+        if self.theme == "dark": self.colours = self.dark
+        if self.theme == "light": self.colours = self.light
+
+        # Update background
+        self.configure(bg=self.colours["bg"])
+
+        # Destroy old menu buttons
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        # recreate button area
+        self.button_area = Frame(self, bg=self.colours["bg"])
+        self.button_area.pack(side="top", fill="x")
+
+        # recreate border
+        self.border = Frame(self, height=1, bg=self.colours["activebackground"])
+        self.border.pack(side="bottom", fill="x")
+
+        # rebuild menus
+        self.build_menus()
+
 root = Tk() # create window
 
+sv_ttk.set_theme(darkdetect.theme())#replace darkdetect.theme() with accessing a save.txt in which the default value is set to darkdetect.theme()
+
 startup_update = BooleanVar(value=True)#auto update on start set to True by default
+# this jsut has to = true inside a function when I end up saving it to a .txt
 
 # METADATA SETUP
 root.resizable(False, False)
@@ -144,73 +311,17 @@ large_icon = PhotoImage(file="icons/docuScan_favicon_x32.png")
 root.iconphoto(False, large_icon, small_icon)
 
 #navbar menu
-menu = Menu(root)
-if darkdetect.theme() == "dark":
-    menu.configure(
-        bg="#1c1c1c",
-        fg="white",
-        activebackground="#2a2a2a",
-        activeforeground="white"
-    )
+menubar = MenuBar(root)
+menubar.pack(side="top", fill="x")
 
+content = Frame(root)
+content.pack(fill="both", expand=True)
 
-file = Menu(menu, tearoff=0)
-file.add_command(label="Open", command=openFile)
-file.add_command(label="Recent Files")
-file.add_separator()
-file.add_command(label="Exit", command=root.destroy)
+# OPTIONS FRAME
 
-menu.add_cascade(label="File", menu=file) # add file sub-menu to menu bar
-
-
-view = Menu(menu, tearoff=0)
-menu.add_cascade(label="View", menu=view)
-
-theme = Menu(view, tearoff=0)
-theme.add_command(label="Auto", command=themeAuto)
-theme.add_command(label="Dark Mode", command=themeDark)
-theme.add_command(label="Light Mode", command=themeLight)
-
-view.add_cascade(label="Appearence", menu=theme)
-
-
-helpMenu = Menu(menu, tearoff=0)
-helpMenu.add_command(label="Web Version", command=openWebsite)
-helpMenu.add_command(label="GitHub Repository", command=openRepo)
-helpMenu.add_separator()
-
-updates = Menu(menu,tearoff=0)
-updates.add_command(label="Check Now", command=updateCheck)
-updates.add_checkbutton(label="Check on Start", variable=startup_update)
-helpMenu.add_cascade(label="Check for Updates...", menu=updates)
-
-helpMenu.add_separator()
-helpMenu.add_command(label="About")
-menu.add_cascade(label="Help", menu=helpMenu)
-
-#options
-main = ttk.LabelFrame(root, text="Options (NOT FUNCTIONAL YET)", padding=20) # create frame
+main = ttk.LabelFrame(content, text="Options (NOT FUNCTIONAL YET)", padding=20) # create frame
 main.grid(column=0, row=0, padx=(30,0), pady=(30,15))
 
-#image details
-details = ttk.LabelFrame(root, text="Details", padding=20) # create frame
-details.grid(column=1, row=0, padx=30, pady=(30,15))
-
-disclaimer = ttk.Label(details,text="Image details appear here once you select an image.\n\nTo choose an image, navigate to File > Open")
-disclaimer.grid(column=1, row=0)
-
-#preview
-preview = ttk.LabelFrame(root, text="Preview", padding=20) # create frame
-preview.grid(column=1, row=1, padx=30, pady=(0,30))
-
-preview_text = ttk.Label(preview,text="No image selected.")
-preview_text.grid(column=1, row=1)
-
-#buttons
-buttons = ttk.Frame(root, padding=20) # create frame
-buttons.grid(column=0, row=1, padx=(30,0), pady=(0,30))
-
-# WIDGETS
 #white point settings
 white_point_var = IntVar(value=50)
 white_point_label = ttk.Label(main, text="White Point")
@@ -231,6 +342,32 @@ black_point_slider.grid(column=0,row=3)
 black_point_value_label = ttk.Label(main, textvariable=black_point_var)
 black_point_value_label.grid(column=1, row=3, padx=(5,0))
 
+# VERTICAL SEPARATOR
+
+separator = ttk.Separator(content, orient="vertical")
+separator.grid(column=1, row=0, rowspan=2, sticky="ns", padx=30, pady=10)
+
+# PREVIEW FRAME
+
+preview = ttk.LabelFrame(content, text="Preview", padding=20) # create frame
+preview.grid(column=2, row=0, padx=(0,30), pady=(0,30))
+
+preview_text = ttk.Label(preview,text="No image selected.")
+preview_text.grid(column=2, row=0)
+
+# IMAGE DETAILS FRAME
+
+details = ttk.LabelFrame(content, text="Details", padding=20) # create frame
+details.grid(column=2, row=1, padx=(0,30), pady=(30,15))
+
+disclaimer = ttk.Label(details,text="Image details appear here once you select an image.\n\nTo choose an image, navigate to File > Open")
+disclaimer.grid(column=2, row=1)
+
+# BUTTONS FRAME
+
+buttons = ttk.Frame(content, padding=20) # create frame
+buttons.grid(column=0, row=1, padx=(30,0), pady=(0,30))
+
 #scan button
 scan = ttk.Button(buttons,text="Scan", command=scanImage, state="disabled", style="Accent.TButton")
 scan.grid(column=0,row=0, padx=(0,5))
@@ -240,7 +377,6 @@ save.grid(column=1,row=0, padx=(5,0))
 
 # THEMING
 
-sv_ttk.set_theme(darkdetect.theme())#replace darkdetect.theme() with accessing a save.txt in which the default value is set to darkdetect.theme()
 
 def apply_theme_to_titlebar(root): # windows only
     import platform
@@ -260,8 +396,6 @@ def apply_theme_to_titlebar(root): # windows only
         root.wm_attributes("-alpha", 1)
 
 apply_theme_to_titlebar(root)
-
-root.config(menu=menu)#display menu
 
 # check for updates once the whole gui has loaded
 if startup_update.get(): 
