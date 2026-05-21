@@ -1,7 +1,12 @@
-<picture>
-  <source srcset="images/docuScan_dark.svg" media="(prefers-color-scheme: dark)">
-  <img src="images/docuScan_light.svg" alt="Project Logo" width="300">
-</picture>
+<div align="center">
+  <picture>
+    <source srcset="images/docuScan_dark.svg" media="(prefers-color-scheme: dark)">
+    <img src="images/docuScan_light.svg" alt="Project Logo" width="300">
+  </picture>
+  <p><em><sub>Logo created in Adobe Illustrator 2026</sub></em></p>
+</div>
+<br>
+
 <p>In retaliation to the discontinuation of Microsoft Office Lens, I have created this simple tool to convert images into a scanned document appearance.</p>
 
 <table>
