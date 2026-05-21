@@ -12,13 +12,17 @@ import requests # for checking updates through GitHub API
 import re # regex for extracting version number from APP_VERSION and GitHub tag
 
 global APP_VERSION
-APP_VERSION = "v0.2.2-beta"
+APP_VERSION = "v0.3.0-beta"
 
-white_point = 0.5 * 255 # 0 (black) to 255 (white)
-black_point = 0.99 * 255 # 99%
+white_point = 0.99 * 255 # 99%
 
 def scanImage():
     global new_image # for the saveFile() function
+
+    # set Black Point based on slider
+    slider_black_point = black_point_slider.get()
+    black_point = (slider_black_point / 100) * 255 # 0 (black) to 255 (white)
+
     # Open image and convert it to greyscale
     og_img = Image.open(filepath).convert('L') # L = luminance | A = alpha
     mode=og_img.mode # get the mode again because we've now switched to Luminance
@@ -33,10 +37,10 @@ def scanImage():
             # Copy the original pixel to the new pixel map.
             og_pixel = og_pixel_map[x, y]
             
-            if og_pixel < white_point:
+            if og_pixel < black_point:
                 new_pixel = 0
                 new_pixel_map[x, y] = new_pixel
-            if og_pixel > white_point and og_pixel < black_point:
+            if og_pixel > black_point and og_pixel < white_point:
                 new_pixel = 255
                 new_pixel_map[x, y] = new_pixel
 
@@ -65,27 +69,32 @@ def openFile():
     try:# Open image and display info
         og_img = Image.open(filepath)
 
-        # Grab and store img info
         filename = os.path.basename(og_img.filename)
+
+        # Grab and store img info
         size_bytes = os.path.getsize(filepath)
         width,height=og_img.size
         mode=og_img.mode
 
         # Show information about the original image.
-        clearFrame(details)#instead of disclaimer.grid_forget()
+        clearFrame(details)
         display_filepath = ttk.Label(details,text=f"Original image: {filepath}").grid(column=0, row=0)
         display_size = ttk.Label(details,text=f"Size: {width} x {height} pixels").grid(column=0, row=1)
         display_mode = ttk.Label(details,text=f"Colour Mode: {mode}").grid(column=0, row=2)
         display_bytes = ttk.Label(details,text=f"File Size: {size_bytes} bytes").grid(column=0, row=3)
 
         # activate buttons so that they are clickable
-        white_point_slider.config(state="normal")
         black_point_slider.config(state="normal")
+        black_point_spin.config(state="normal")
         scan.config(state="normal")
 
     except Image.UnidentifiedImageError:
-        disclaimer.grid_forget()
-        wrong_image = ttk.Label(details,text=f"Error: {filepath} is either corrupted or not supported.").grid(column=0, row=0)
+        clearFrame(details)
+        filename, extension = os.path.splitext(filepath)# splits ('C:/Users/Dwad/Downloads/Doc1', '.pdf') into two variables
+        if extension.lower() == ".pdf":
+            ttk.Label(details,text=f"Error: PDF must have image metadata, not text.").grid(column=0, row=0)
+        else:
+            ttk.Label(details,text=f"Error: {filepath} is either corrupted or not supported.").grid(column=0, row=0)
 
 def openRepo():
     webbrowser.open("https://github.com/dwaaad/docuScan")
@@ -146,7 +155,8 @@ def updateCheck():
         if update_response == True:
             webbrowser.open("https://github.com/dwaaad/docuScan/releases/latest")
 
-class MenuBar(Frame): # a lot of this class was written with Copilot
+# custom menubar
+class MenuBar(Frame): # a lot of this class was written with the help of Copilot
     # Source: https://stackoverflow.com/a/74974555
     # Author: user4136999
     # Retrieved: 2026-05-20
@@ -239,13 +249,13 @@ class MenuBar(Frame): # a lot of this class was written with Copilot
 
         # Appearance submenu
         theme_menu = self.make_menu(view_menu)
-        theme_menu.add_command(label="Auto", command=themeAuto)
-        theme_menu.add_command(label="Dark Mode", command=themeDark)
-        theme_menu.add_command(label="Light Mode", command=themeLight)
+        theme_menu.add_command(label="[x] Auto", command=themeAuto)# make this a checked/unchecked button
+        theme_menu.add_command(label="[ ] Dark Mode", command=themeDark)# make this a checked/unchecked button
+        theme_menu.add_command(label="[ ] Light Mode", command=themeLight)# make this a checked/unchecked button
 
         view_menu.add_cascade(label="Appearance", menu=theme_menu)
         view_menu.add_separator()
-        view_menu.add_command(label="Show Details")
+        view_menu.add_command(label="[x] Show Details")# make this a checked/unchecked button
 
         view_btn.config(menu=view_menu)
         view_btn.pack(in_=self.button_area,side="left")
@@ -296,6 +306,31 @@ class MenuBar(Frame): # a lot of this class was written with Copilot
         # rebuild menus
         self.build_menus()
 
+class Limiter(ttk.Scale):
+    # Source - https://stackoverflow.com/a/54318377
+    # Posted by martineau, modified by community. See post 'Timeline' for change history
+    # Retrieved 2026-05-21, License - CC BY-SA 4.0
+    #
+    # This class contains modified work based on the above source.
+    # It is therefore licensed under CC BY-SA 4.0.
+    """ ttk.Scale sublass that limits the precision of values. """
+
+    def __init__(self, *args, **kwargs):
+        self.precision = kwargs.pop('precision')  # Remove non-std kwarg.
+        self.chain = kwargs.pop('command', lambda *a: None)  # Save if present.
+        super(Limiter, self).__init__(*args, command=self._value_changed, **kwargs)
+
+    def _value_changed(self, newvalue):
+        newvalue = float(newvalue)
+        newvalue = round(newvalue, self.precision)
+
+        # If precision is 0, convert to int so you get "50" not "50.0"
+        if self.precision == 0:
+            newvalue = int(newvalue)
+
+        self.winfo_toplevel().globalsetvar(self.cget('variable'), newvalue)
+        self.chain(newvalue)
+
 root = Tk() # create window
 
 sv_ttk.set_theme(darkdetect.theme())#replace darkdetect.theme() with accessing a save.txt in which the default value is set to darkdetect.theme()
@@ -319,28 +354,35 @@ content.pack(fill="both", expand=True)
 
 # OPTIONS FRAME
 
-main = ttk.LabelFrame(content, text="Options (NOT FUNCTIONAL YET)", padding=20) # create frame
-main.grid(column=0, row=0, padx=(30,0), pady=(30,15))
+options = ttk.LabelFrame(content, text="Options", padding=20) # create frame
+options.grid(column=0, row=0, padx=(30,0), pady=(30,0))
 
-#white point settings
-white_point_var = IntVar(value=50)
-white_point_label = ttk.Label(main, text="White Point")
-white_point_label.grid(column=0,row=0)
-white_point_slider = ttk.Scale(main, from_=0, to=100, variable=white_point_var, state="disabled")
-white_point_slider.grid(column=0,row=1, pady=(0,10))
+#Black Point settings
+black_point_var = IntVar(value=50)
+black_point_label = ttk.Label(options, text="Black Point")
+black_point_label.grid(column=0, columnspan=2, row=2, pady=(0,10))
+black_point_slider = Limiter(options, from_=0, to=100, precision=0, variable=black_point_var, state="disabled")
+black_point_slider.grid(column=0, columnspan=2, row=3)
 
-white_point_value_label = ttk.Label(main, textvariable=white_point_var)
-white_point_value_label.grid(column=1, row=1, padx=(5,0))
+black_point_value_label = ttk.Label(options, textvariable=black_point_var)
+black_point_value_label.grid(column=1, columnspan=2, row=3, padx=(5,0))
 
-#black point settings
-black_point_var = IntVar(value=99)
-black_point_label = ttk.Label(main, text="Black Point")
-black_point_label.grid(column=0,row=2, pady=(10,0))
-black_point_slider = ttk.Scale(main, from_=0, to=100, variable=black_point_var, state="disabled")
-black_point_slider.grid(column=0,row=3)
+def validateBlackPoint(new_value):
+    if new_value == "":
+        return True  # allow empty while typing
+    if new_value.isdigit():
+        num = int(new_value)
+        return 0 <= num <= 100
+    return False
 
-black_point_value_label = ttk.Label(main, textvariable=black_point_var)
-black_point_value_label.grid(column=1, row=3, padx=(5,0))
+# "validatecommand" and "invalidcommand" both use a Tcl/Tk command, which cannot call Python functions directly.
+# So we need to register a Tcl command that represents the validateBlackPoint() function
+vcmd = (root.register(validateBlackPoint), "%P")# "%P" Tcl placeholder representing any new value after a key press
+# the above becomes something like: validatecommand="pyfunc12345 %P"
+# Tcl will call: pyfunc12345 <new_value>
+# which Tkinter translates into: validateBlackPoint("<new_value>")
+black_point_spin = ttk.Spinbox(options, from_=0, to=100, textvariable=black_point_var, state="disabled", validate="key", validatecommand=vcmd)# validate="key" means run the validatecommand everytime there is a key input
+black_point_spin.grid(column=0, columnspan=2, row=4, pady=(10,0))
 
 # VERTICAL SEPARATOR
 
@@ -350,7 +392,7 @@ separator.grid(column=1, row=0, rowspan=2, sticky="ns", padx=30, pady=10)
 # PREVIEW FRAME
 
 preview = ttk.LabelFrame(content, text="Preview", padding=20) # create frame
-preview.grid(column=2, row=0, padx=(0,30), pady=(0,30))
+preview.grid(column=2, row=0, padx=(0,30), pady=(30,15))
 
 preview_text = ttk.Label(preview,text="No image selected.")
 preview_text.grid(column=2, row=0)
@@ -358,7 +400,7 @@ preview_text.grid(column=2, row=0)
 # IMAGE DETAILS FRAME
 
 details = ttk.LabelFrame(content, text="Details", padding=20) # create frame
-details.grid(column=2, row=1, padx=(0,30), pady=(30,15))
+details.grid(column=2, row=1, padx=(0,30), pady=(0,30))
 
 disclaimer = ttk.Label(details,text="Image details appear here once you select an image.\n\nTo choose an image, navigate to File > Open")
 disclaimer.grid(column=2, row=1)
@@ -376,7 +418,6 @@ save = ttk.Button(buttons,text="Save", command=saveFile, state="disabled")
 save.grid(column=1,row=0, padx=(5,0))
 
 # THEMING
-
 
 def apply_theme_to_titlebar(root): # windows only
     import platform
