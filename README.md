@@ -11,5 +11,5 @@
 
 # Licence
 This project is licensed under a modified version of the MIT License.
-However, the file `gui.py` contains code derived from a StackOverflow answer
-licensed under CC BY-SA 4.0 and its class is therefore distributed under CC BY-SA 4.0.
+However, the file [`gui.py`](https://github.com/dwaaad/docuScan/blob/main/py/gui.py) contains code derived from StackOverflow answers
+licensed under CC BY-SA 4.0 and its classes are therefore distributed under CC BY-SA 4.0.
