@@ -1,7 +1,7 @@
-from tkinter import *
+from tkinter import * # for GUI
 from tkinter import ttk # provides access to the Tk themed widget set
-from tkinter import filedialog
-from tkinter import messagebox # for update dialog
+from tkinter import filedialog # for picking file
+from tkinter import messagebox # for popup update dialog
 import pywinstyles, sys # for black title bar WINDOWS ONLY
 import sv_ttk # tkinter sun valley theme
 import darkdetect # for detecting what theme OS is set to
@@ -12,9 +12,12 @@ import requests # for checking updates through GitHub API
 import re # regex for extracting version number from APP_VERSION and GitHub tag
 
 global APP_VERSION
-APP_VERSION = "v0.3.0-beta"
+APP_VERSION = "v0.3.1-beta"
 
-white_point = 0.99 * 255 # 99%
+# retrieve windows system accent colour
+win_accent = pywinstyles.get_accent_color()
+
+white_point = 0.99 * 255 # 99% - the upper bound degree to which a white pixel is turned black
 
 def scanImage():
     global new_image # for the saveFile() function
@@ -63,8 +66,20 @@ def openFile():
         filetypes=(("Image files", img_filter), ("All files", "*.*"))
     )
 
-    if not filepath:
-        return  # user cancelled, exit the function safely
+    if not filepath: # user closed file dialog popup
+        return # exit the function safely
+    
+    # if the user selects an openable file but an unsavable one then offer a convertion
+    unsupported_exts = [ext.lower() for ext, fmt in all_exts.items() if fmt in Image.OPEN]
+    filename, extension = os.path.splitext(filepath)# splits ('C:/Users/Dwad/Downloads/Doc1', '.pdf') into two variables
+    if extension.lower() in unsupported_exts and extension.lower() not in supported_exts:
+        convert_response = messagebox.askokcancel("Unsupported file type!", f"File type unsupported. Do you want to convert to .PNG and continue?\n\nNote: the converted file will be saved to {filename + '.png'}", icon="warning")
+        if convert_response == True:
+            new_path = filename + ".png"
+            filepath = Image.open(filepath).convert("RGB").save(new_path, "PNG")
+            filepath = new_path # switch to new path
+        else:
+            return # exit the function safely
 
     try:# Open image and display info
         og_img = Image.open(filepath)
@@ -94,7 +109,7 @@ def openFile():
         if extension.lower() == ".pdf":
             ttk.Label(details,text=f"Error: PDF must have image metadata, not text.").grid(column=0, row=0)
         else:
-            ttk.Label(details,text=f"Error: {filepath} is either corrupted or not supported.").grid(column=0, row=0)
+            ttk.Label(details,text=f"Error: File is either corrupted or unsupported.").grid(column=0, row=0)
 
 def openRepo():
     webbrowser.open("https://github.com/dwaaad/docuScan")
@@ -151,7 +166,7 @@ def updateCheck():
 
     # compare version numbers
     if latest_version > current_version:
-        update_response = messagebox.askyesno("New version available!", f"A newer version ({latest_tag}) is available. Update now?\n\nDisable this message by going to Help > Check for Updates... > Check on Start")
+        update_response = messagebox.askyesno("New version available!", f"docuScan {latest_tag} is available. You're using {APP_VERSION}.\n\nOpen link to download page?")
         if update_response == True:
             webbrowser.open("https://github.com/dwaaad/docuScan/releases/latest")
 
