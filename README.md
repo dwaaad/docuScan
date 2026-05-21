@@ -9,10 +9,12 @@
 
 <p>In retaliation to the discontinuation of Microsoft Office Lens, I have created this simple tool to convert images into a scanned document appearance.</p>
 
+### Document Comparison
+<p>Here is a demonstration of what docuScan achieves.</p>
 <table>
-  <tr>
-    <td align="center"><strong>Before</strong></td>
-    <td align="center"><strong>After</strong></td>
+  <tr align="center">
+    <td><strong>Input</strong></td>
+    <td><strong>Output</strong></td>
   </tr>
   <tr>
     <td>
