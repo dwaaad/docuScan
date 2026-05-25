@@ -28,7 +28,7 @@
 
 # Pseudocode
 There already exists tons of apps that exchieve the same results, but they all hide their features behind paywalls and ads that bloat your phone.
-I came up with a theoretical algorithm to achieve the same in seconds and had a working prototype in less than a day.
+I came up with a theoretical algorithm to achieve the same in seconds, and had a working prototype in less than a day.
 It was deceptively simple, and. I want it to be publically available free to use for anybody:
 ```
 loop through each pixel:
