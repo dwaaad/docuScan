@@ -26,6 +26,18 @@
   </tr>
 </table>
 
+# Pseudocode
+There already exists tons of apps that exchieve the same results, but they all hide their features behind paywalls and ads that bloat your phone.
+I came up with a theoretical algorithm to achieve the same in seconds and had a working prototype in less than a day.
+It was deceptively simple, and. I want it to be publically available free to use for anybody:
+```
+loop through each pixel:
+     if the_current_pixel is less than 50% grey then:
+          change the_current_pixel to white
+     if the_current_pixel is more than 50% grey and less than or equal to 99% then:
+          change the_current_pixel to black
+```
+
 # Installation
 1. Clone repository
 ```cmd
