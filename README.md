@@ -31,7 +31,7 @@
 <p>I came up with a theoretical algorithm to achieve the same in seconds, and had a working prototype in less than a day.</p>
 <p>It was deceptively simple, and I want it to be publically available, free to use for anybody:</p>
 
-```
+```pseudocode
 loop through each pixel:
      if the_current_pixel is less than 50% grey then:
           change the_current_pixel to white
