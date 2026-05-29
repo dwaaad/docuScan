@@ -39,7 +39,8 @@ loop through each pixel:
           change the_current_pixel to black
 ```
 
-# Installation
+# Build Instructions
+To build a python copy from source, follow the instructions below:
 1. Clone repository
 ```cmd
 git clone https://github.com/dwaaad/docuScan.git
