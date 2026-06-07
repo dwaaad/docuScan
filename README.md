@@ -31,12 +31,12 @@
 <p>I came up with a theoretical algorithm to achieve the same in seconds, and had a working prototype in less than a day.</p>
 <p>It was deceptively simple, and I want it to be publically available, free to use for anybody:</p>
 
-```pseudocode
+```python
 loop through each pixel:
-     if the_current_pixel is less than 50% grey then:
-          change the_current_pixel to white
-     if the_current_pixel is more than 50% grey and less than or equal to 99% then:
-          change the_current_pixel to black
+     if the_current_pixel < 50% black: # then it's grey which should be white
+          the_current_pixel = white
+     if the_current_pixel > 50% black AND the_current_pixel <= 99% black: # then it's dark grey which should black
+          the_current_pixel = black
 ```
 
 # Build Instructions
