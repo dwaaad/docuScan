@@ -62,6 +62,8 @@ python3 main.py
 # To Do
 - [ ] React Web Version
 - [ ] React Native Mobile Version
+<!-- github.com/agyorev/DocuScan/tree/master - openCV autocrop rectangles -->
+<!-- github.com/joehanmisquitta/DocuScan/tree/main - check out this web app -->
 
 # Licence
 This project is licensed under the GNU AGPLv3 licence.
