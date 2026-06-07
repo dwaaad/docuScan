@@ -32,6 +32,7 @@
 <p>It was deceptively simple, and I want it to be publically available, free to use for anybody:</p>
 
 ```python
+greyscale the image
 loop through each pixel:
      if the_current_pixel < 50% black: # then it's grey which should be white
           the_current_pixel = white
