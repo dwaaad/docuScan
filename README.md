@@ -53,11 +53,11 @@ pip install -r requirements.txt
 ```
 3. Run program
 ```cmd
-python main.py
+python gui.py
 ```
 If this doesn't work, you can try:
 ```cmd
-python3 main.py
+python3 gui.py
 ```
 
 # To Do
