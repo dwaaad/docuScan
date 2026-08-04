@@ -75,5 +75,3 @@ This project is licensed under the GNU AGPLv3 licence.
 However, the file [`gui.py`](https://github.com/dwaaad/docuScan/blob/main/py/gui.py)
 contains code derived from StackOverflow answers licensed under CC BY-SA 4.0
 and its classes are therefore distributed under CC BY-SA 4.0.
-
-<!-- Feather Icons by Cole Bemis (MIT License) - https://feathericons.com/ -->
