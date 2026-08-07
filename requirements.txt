@@ -3,3 +3,4 @@ pywinstyles
 sv_ttk
 darkdetect
 requests
+tkinterdnd2
