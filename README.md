@@ -7,7 +7,7 @@
 </div>
 <br>
 
-<p>In retaliation to the discontinuation of Microsoft Office Lens, I have created this simple tool to convert images into a scanned document appearance.</p>
+<p>In retaliation to the discontinuation of Microsoft Office Lens, I have created this simple tool to convert images into a scanned document appearance, without the need for a printer.</p>
 
 ### Document Comparison
 <p>Here is a demonstration of what docuScan achieves.</p>
